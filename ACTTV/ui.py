@@ -1,6 +1,7 @@
 """User interface helpers for the ACTTV app."""
 
 import time
+import ctypes
 import ac
 
 from . import config, state
@@ -23,6 +24,9 @@ def update_ui():
     if state.toggle_button is not None:
         ac.setText(state.toggle_button, "Pause" if state.enabled else "Resume")
 
+    if getattr(state, "force_tv_button", None) is not None:
+        ac.setText(state.force_tv_button, "Force TV cam")
+
 
 def toggle_callback(*args):
     """Pause/Resume button callback."""
@@ -31,4 +35,14 @@ def toggle_callback(*args):
     if state.enabled:
         schedule_next_switch()
     update_ui()
+
+
+def force_tv_cam(*args):
+    """Force switch to TV camera by simulating the F6 key."""
+    ac.log("[{}] Forcing TV camera".format(config.APP_NAME))
+    user32 = ctypes.windll.user32
+    # Press
+    user32.keybd_event(0x75, 0, 0, 0)
+    # Release
+    user32.keybd_event(0x75, 0, 2, 0)
 

@@ -5,6 +5,7 @@ app_window = None
 status_label = None
 camera_label = None
 toggle_button = None
+force_tv_button = None
 
 next_switch_time = 0.0
 current_car_id = -1
