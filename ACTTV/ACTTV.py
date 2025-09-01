@@ -6,7 +6,7 @@ import ac
 from . import config, state
 from .focus import focus_best_by_proximity
 from .scheduler import schedule_next_switch
-from .ui import toggle_callback, update_ui
+from .ui import toggle_callback, force_tv_cam, update_ui
 
 
 def acMain(ac_version):
@@ -23,6 +23,11 @@ def acMain(ac_version):
     ac.setPosition(state.toggle_button, 10, 55)
     ac.setSize(state.toggle_button, 120, 25)
     ac.addOnClickedListener(state.toggle_button, toggle_callback)
+
+    state.force_tv_button = ac.addButton(state.app_window, "Force TV cam")
+    ac.setPosition(state.force_tv_button, 140, 55)
+    ac.setSize(state.force_tv_button, 120, 25)
+    ac.addOnClickedListener(state.force_tv_button, force_tv_cam)
 
     state.camera_label = ac.addLabel(state.app_window, "Camera: TV/manual (set with F2/F5/F6) | Mode: Proximity")
     ac.setPosition(state.camera_label, 10, 85)
