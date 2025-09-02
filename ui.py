@@ -4,13 +4,18 @@ import time
 import ac
 
 from . import config, state
-from .scheduler import schedule_next_switch
+from .scheduler import schedule_next_switch, get_race_intensity
 
 # ctypes may not be available in AC's embedded Python; load lazily and guard
 try:
     import ctypes as _ctypes  # type: ignore
-except Exception:
+except Exception as ex:
     _ctypes = None
+    # Log the exact import failure for diagnosis
+    try:
+        ac.log("[{}] ctypes import failed: {}".format(config.APP_NAME, ex))
+    except Exception:
+        pass
 
 
 def ctypes_available():
@@ -25,31 +30,24 @@ def update_ui():
         remaining = 0.0
 
     if state.status_label is not None:
-        ac.setText(state.status_label, "{} | next: {:0.1f}s".format("running" if state.enabled else "paused", remaining))
-
-    if state.camera_label is not None:
-        ac.setText(state.camera_label, "Camera: TV/manual (set with F2/F5/F6) | Mode: Proximity")
+        ac.setText(state.status_label, "{} | next: {:0.1f}s | Intensity: {:0.2f}".format(
+            "running" if state.enabled else "paused", remaining, get_race_intensity()
+        ))
 
     if state.toggle_button is not None:
         ac.setText(state.toggle_button, "Pause" if state.enabled else "Resume")
 
     if getattr(state, "force_tv_button", None) is not None:
-        if ctypes_available():
-            ac.setText(state.force_tv_button, "Force TV cam")
-            try:
-                ac.setFontColor(state.force_tv_button, 1.0, 1.0, 1.0, 1.0)
-            except Exception:
-                pass
-        else:
-            ac.setText(state.force_tv_button, "Force TV cam (N/A)")
-            try:
-                ac.setFontColor(state.force_tv_button, 0.6, 0.6, 0.6, 1.0)
-            except Exception:
-                pass
+        ac.setText(state.force_tv_button, "Force TV cam")
 
-    if getattr(state, "force_tv_status_label", None) is not None:
-        status = "available" if ctypes_available() else "unavailable"
-        ac.setText(state.force_tv_status_label, "Force TV: {}".format(status))
+    # Focus info: current car id and reason
+    if getattr(state, "focus_label", None) is not None:
+        car_id = state.current_focus()
+        reason = state.current_reason() if hasattr(state, "current_reason") else ""
+        if car_id is None or car_id < 0:
+            ac.setText(state.focus_label, "Focus: — | Reason: —")
+        else:
+            ac.setText(state.focus_label, "Focus: car {} | Reason: {}".format(car_id, reason or ""))
 
 
 def toggle_callback(*args):
@@ -62,10 +60,9 @@ def toggle_callback(*args):
 
 
 def force_tv_cam(*args):
-    """Force switch to TV camera by simulating the F6 key.
+    """Force switch to TV camera by simulating the F3 key.
 
-    If `_ctypes` is unavailable in this environment, the feature is
-    disabled gracefully and we log a message for troubleshooting.
+    Requires `ctypes` availability in Assetto Corsa's Python.
     """
     if _ctypes is None:
         try:
@@ -77,10 +74,13 @@ def force_tv_cam(*args):
     try:
         ac.log("[{}] Forcing TV camera".format(config.APP_NAME))
         user32 = _ctypes.windll.user32
-        # Press F6 (VK_F6 = 0x75)
-        user32.keybd_event(0x75, 0, 0, 0)
+        # Press F3 (VK_F3 = 0x72)
+        user32.keybd_event(0x72, 0, 0, 0)
         # Release
-        user32.keybd_event(0x75, 0, 2, 0)
+        user32.keybd_event(0x72, 0, 2, 0)
     except Exception:
-        log("ui.py: exception using ctypes to send F6")
+        try:
+            ac.log("[{}] ctypes F3 send failed".format(config.APP_NAME))
+        except Exception:
+            pass
         # Silently ignore to avoid breaking the app

@@ -3,9 +3,85 @@
 # Application name
 APP_NAME = "ACTTV"
 
-# --- Config ---
-BASE_INTERVAL = 10.0     # base seconds between switches
-JITTER = 3.0             # random +/- seconds
-MIN_CARS_REQUIRED = 1
-NEAR_RADIUS_M = 20.0     # proximity radius (meters) for "battle" scoring
+# Filtering
+# If True, detectors will ignore cars at or below STOPPED_SPEED_KMH.
+# Default ignores near-stationary cars to avoid noise.
+IGNORE_STOPPED_CARS = True
+STOPPED_SPEED_KMH = 1.0
+MIN_FOCUS_SPEED_KMH = 2.0
 
+# Collision detection thresholds
+COLLISION_WINDOW_S = 0.25
+COLLISION_MIN_DT_S = 0.18
+COLLISION_MIN_DROP_KMH = 28.0
+COLLISION_MIN_PRE_SPEED_KMH = 70.0
+COLLISION_MIN_DROP_RATIO = 0.30  # drop / pre_speed
+COLLISION_MIN_DECEL_KMH_S = 160.0
+COLLISION_MAX_POST_SPEED_KMH = 55.0
+COLLISION_NEAR_RADIUS_M = 7.0
+COLLISION_CONFIRM_WINDOW_S = 0.2
+COLLISION_YAW_CONFIRM_RAD_S = 0.6
+COLLISION_COOLDOWN_S = 2.0
+
+# Offtrack detection thresholds
+OFFTRACK_WINDOW_S = 0.6
+OFFTRACK_MIN_DROP_KMH = 35.0
+OFFTRACK_MIN_PRE_SPEED_KMH = 85.0
+OFFTRACK_MIN_NOW_SPEED_KMH = 8.0
+OFFTRACK_MAX_NOW_SPEED_KMH = 100.0
+OFFTRACK_MIN_DROP_RATIO = 0.25   # drop / pre_speed
+OFFTRACK_MAX_DROP_RATIO = 0.65
+OFFTRACK_YAW_MIN_RAD_S = 0.25
+OFFTRACK_YAW_MAX_RAD_S = 1.2
+OFFTRACK_AVG_YAW_MIN_RAD_S = 0.30
+OFFTRACK_CONFIRM_WINDOW_S = 0.3
+OFFTRACK_COOLDOWN_S = 2.0
+
+# Scheduling
+DWELL_BASE = 10.0
+JITTER_RANGE = 3.0
+K_INTENSITY = 0.5
+HYSTERESIS_WINDOW = 10.0
+LOW_INTENSITY_BONUS = 0.6  # extra fraction of base at intensity=0
+HIGH_INTENSITY_SHORTEN_MAX = 0.20  # up to -20% at intensity=1
+
+# Race intensity
+BATTLE_GAP_TIME = 1.0
+BATTLE_RADIUS_M = 24.0
+INTENSITY_WINDOW = 30.0
+ALPHA_BATTLE = 0.7
+EMA_TAU = 6.0
+
+# Proximity
+PROX_RADIUS_M = 22.0
+PROX_K = 4
+BETA_NEAREST = 0.6
+
+# Leader moment
+LEADER_START_WINDOW = 0.05
+LEADER_END_WINDOW = 0.05
+
+# Rarity
+# Rarity full after: computed as max(15.0, 0.5 * DWELL_BASE * cars_count)
+UNSEEN_BONUS = 0.75
+
+# Event dwell
+EVENT_DWELL_COLLISION = 6.0
+EVENT_DWELL_SPIN = 5.0
+EVENT_DWELL_OFFTRACK = 4.0
+EVENT_DWELL_PIT_ENTRY = 2.0
+
+# Weights
+W_PROX = 1.00
+W_LEADER = 0.70
+W_RARITY = 0.50
+W_HYST = 0.80
+W_PIT = 0.60
+
+# Performance budgets
+PROX_STEP_CARS = 6
+CELL_SIZE_M = 22.0
+MAX_DISTANCE_TESTS_PER_SEC = 100
+
+# App limits
+MIN_CARS_REQUIRED = 1
